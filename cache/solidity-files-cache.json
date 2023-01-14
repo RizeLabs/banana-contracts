@@ -1,0 +1,1147 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/core/BasePaymaster.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "677c0e1e2735d87d8275067a67de24a5",
+      "sourceName": "contracts/core/BasePaymaster.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "../interfaces/IPaymaster.sol",
+        "../interfaces/IEntryPoint.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "BasePaymaster"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1670990423442,
+      "contentHash": "e436cea06129be2c73cda4b1acc848b5",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IPaymaster.sol": {
+      "lastModificationDate": 1670033993744,
+      "contentHash": "b2ec1d0cc3e7c146514d2248b34c1a50",
+      "sourceName": "contracts/interfaces/IPaymaster.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IPaymaster"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IEntryPoint.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "566f0750295f0f3bb9333030d5e61ca6",
+      "sourceName": "contracts/interfaces/IEntryPoint.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol",
+        "./IStakeManager.sol",
+        "./IAggregator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IEntryPoint"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1670990423443,
+      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/UserOperation.sol": {
+      "lastModificationDate": 1670033993744,
+      "contentHash": "edf67111c4fcfa8485852414eafee53c",
+      "sourceName": "contracts/interfaces/UserOperation.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "UserOperationLib"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IStakeManager.sol": {
+      "lastModificationDate": 1670033993744,
+      "contentHash": "01ca6b21dc1246dec79e1aa69f191fe2",
+      "sourceName": "contracts/interfaces/IStakeManager.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IStakeManager"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IAggregator.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "a61406d7422c515af18e65403d809c8a",
+      "sourceName": "contracts/interfaces/IAggregator.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IAggregator"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/core/EntryPoint.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "a3df5d8a400937e2c80ef35a99c4a21b",
+      "sourceName": "contracts/core/EntryPoint.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/IWallet.sol",
+        "../interfaces/IPaymaster.sol",
+        "../interfaces/IAggregatedWallet.sol",
+        "../interfaces/IEntryPoint.sol",
+        "../interfaces/ICreate2Deployer.sol",
+        "../utils/Exec.sol",
+        "./StakeManager.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "EntryPoint"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IWallet.sol": {
+      "lastModificationDate": 1670033993744,
+      "contentHash": "bc4ab5efe4a2d03fe77fbe2029f89be9",
+      "sourceName": "contracts/interfaces/IWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/IAggregatedWallet.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "d1f17d0864d6b27f4692cf41caf5c2a3",
+      "sourceName": "contracts/interfaces/IAggregatedWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol",
+        "./IWallet.sol",
+        "./IAggregator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IAggregatedWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/interfaces/ICreate2Deployer.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "4100594d8ee8d314d3cd9104f1fcbe53",
+      "sourceName": "contracts/interfaces/ICreate2Deployer.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "ICreate2Deployer"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/utils/Exec.sol": {
+      "lastModificationDate": 1670033993744,
+      "contentHash": "8b753f7455620583e2ef0a8baf245e87",
+      "sourceName": "contracts/utils/Exec.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.5 <0.9.0"
+      ],
+      "artifacts": [
+        "Exec"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/core/StakeManager.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "6f00d256b42ddbb8b772db8162f089a3",
+      "sourceName": "contracts/core/StakeManager.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/IStakeManager.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "StakeManager"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/core/BaseWallet.sol": {
+      "lastModificationDate": 1670033993743,
+      "contentHash": "de06aff9a79e801e76e1d8631f9de86c",
+      "sourceName": "contracts/core/BaseWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/IWallet.sol",
+        "../interfaces/IEntryPoint.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "BaseWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/Create2Factory.sol": {
+      "lastModificationDate": 1670033993742,
+      "contentHash": "9a665a2ece1cb44db3860abed992a3e5",
+      "sourceName": "contracts/Create2Factory.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "Create2Factory"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/MyWallet.sol": {
+      "lastModificationDate": 1673671350120,
+      "contentHash": "fdeff199680bbecbb5bfe1da89915841",
+      "sourceName": "contracts/MyWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@account-abstraction/contracts/core/BaseWallet.sol",
+        "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+        "./EllipticCurve.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IVerifier",
+        "MyWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/core/BaseWallet.sol": {
+      "lastModificationDate": 1670990423111,
+      "contentHash": "de06aff9a79e801e76e1d8631f9de86c",
+      "sourceName": "@account-abstraction/contracts/core/BaseWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/IWallet.sol",
+        "../interfaces/IEntryPoint.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "BaseWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
+      "lastModificationDate": 1670990425566,
+      "contentHash": "e240957102529c3ccf73bcf4527bcddc",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../Strings.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ECDSA"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/interfaces/IWallet.sol": {
+      "lastModificationDate": 1670990423111,
+      "contentHash": "bc4ab5efe4a2d03fe77fbe2029f89be9",
+      "sourceName": "@account-abstraction/contracts/interfaces/IWallet.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IWallet"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/interfaces/IEntryPoint.sol": {
+      "lastModificationDate": 1670990423111,
+      "contentHash": "566f0750295f0f3bb9333030d5e61ca6",
+      "sourceName": "@account-abstraction/contracts/interfaces/IEntryPoint.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol",
+        "./IStakeManager.sol",
+        "./IAggregator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IEntryPoint"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/interfaces/UserOperation.sol": {
+      "lastModificationDate": 1672239210803,
+      "contentHash": "1927c2ed5791f013885de29532acf242",
+      "sourceName": "@account-abstraction/contracts/interfaces/UserOperation.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "UserOperationLib"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/interfaces/IStakeManager.sol": {
+      "lastModificationDate": 1670990423112,
+      "contentHash": "01ca6b21dc1246dec79e1aa69f191fe2",
+      "sourceName": "@account-abstraction/contracts/interfaces/IStakeManager.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IStakeManager"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@account-abstraction/contracts/interfaces/IAggregator.sol": {
+      "lastModificationDate": 1670990423111,
+      "contentHash": "a61406d7422c515af18e65403d809c8a",
+      "sourceName": "@account-abstraction/contracts/interfaces/IAggregator.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UserOperation.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IAggregator"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
+      "lastModificationDate": 1670990423444,
+      "contentHash": "cf46906c4035f51639a22265066a9e78",
+      "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Strings"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/MyWalletDeployer.sol": {
+      "lastModificationDate": 1673671362967,
+      "contentHash": "81a0b8295d2e58d5e5ff73a337879b6c",
+      "sourceName": "contracts/MyWalletDeployer.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./MyWallet.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "MyWalletDeployer"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/OTP.sol": {
+      "lastModificationDate": 1670033993742,
+      "contentHash": "6120d61201657fe7d4b9b7ddafd420da",
+      "sourceName": "contracts/OTP.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "IVerifier",
+        "OTP"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/OTPFactory.sol": {
+      "lastModificationDate": 1670033993742,
+      "contentHash": "5c74c235c25df27367b14289201c7981",
+      "sourceName": "contracts/OTPFactory.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./OTP.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "OTPFactory"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/verifier.sol": {
+      "lastModificationDate": 1671464151265,
+      "contentHash": "3854b5eb466543c91abe58a6352e1105",
+      "sourceName": "contracts/verifier.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "Pairing",
+        "Verifier"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/EllipticCurve.sol": {
+      "lastModificationDate": 1672238834645,
+      "contentHash": "628f9a7c6eee21bbf83247ba8468e646",
+      "sourceName": "contracts/EllipticCurve.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "EllipticCurve"
+      ]
+    },
+    "/Users/nitanshulokhande/Documents/Projects/ethindia/ethindia/ethindia-new/hacking-at-ethindia/hardhat/contracts/Staking.sol": {
+      "lastModificationDate": 1671599088998,
+      "contentHash": "f2f33daf9c9968321f91155e261b32f6",
+      "sourceName": "contracts/Staking.sol",
+      "solcConfig": {
+        "version": "0.8.12",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.12"
+      ],
+      "artifacts": [
+        "Staking"
+      ]
+    }
+  }
+}

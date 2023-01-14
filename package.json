@@ -1,0 +1,53 @@
+{
+  "name": "zk-otp",
+  "version": "1.0.0",
+  "description": "InfinitoLabs",
+  "scripts": {
+    "compile:contracts": "npx hardhat compile --force",
+    "develop": "npx hardhat node",
+    "deploy:localhost": "npx hardhat deploy --tags complete",
+    "test": "npx hardhat test",
+    "test:full": "npm run compile:circuits && npm run version:fix && npx hardhat test",
+    "compile:circuits": "bash scripts/compile-circuits.sh",
+    "version:fix": "node scripts/bump-solidity",
+    "setup:circom": "bash scripts/setup-circom.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/socathie/zkOTP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/socathie/zkOTP.git/issues"
+  },
+  "homepage": "https://github.com/socathie/zkOTP.git#readme",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.6",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.6",
+    "circom_tester": "^0.0.11",
+    "circomlib": "^2.0.5",
+    "circomlib-matrix": "^1.0.1",
+    "circomlib-ml": "^1.1.0",
+    "circomlibjs": "^0.1.7",
+    "dotenv": "^16.0.1",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.6.8",
+    "hardhat": "^2.9.7",
+    "hardhat-contract-sizer": "^2.4.0",
+    "hardhat-deploy": "^0.10.6",
+    "hardhat-gas-reporter": "^1.0.7",
+    "snarkjs": "^0.4.24",
+    "totp-generator": "^0.0.13",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4",
+    "web3-utils": "^1.7.0"
+  },
+  "dependencies": {
+    "@account-abstraction/contracts": "^0.2.0",
+    "@openzeppelin/contracts": "^4.7.3"
+  }
+}
