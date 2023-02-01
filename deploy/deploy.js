@@ -26,9 +26,9 @@ async function main() {
 	console.log('myWalletDeployer :', myWalletDeployer.address);
 
 
-	const ec = await ethers.getContractFactory('EllipticCurve');
-	const ec_deployed = await ec.deploy();
-	console.log('Elliptic :', ec_deployed.address);
+	// const ec = await ethers.getContractFactory('EllipticCurve');
+	// const ec_deployed = await ec.deploy();
+	// console.log('Elliptic :', ec_deployed.address);
 
 	// const ec = await ethers.getContractFactory('Staking');
 	// const ecDeployer = await ec.deploy();

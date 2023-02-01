@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
-import "./MyWallet.sol";
+import "./MyTouchIdWallet.sol";
 
 /**
  * a sampler deployer contract for SimpleWallet
@@ -11,18 +11,16 @@ contract MyWalletDeployer {
     function deployWallet(
         IEntryPoint entryPoint,
         address owner,
-		uint256 root,
         uint256 salt,
         uint256[2] memory _qValues, 
         address _ellipticCurve
-    ) public returns (MyWallet) {
-        return new MyWallet{salt: bytes32(salt)}(entryPoint, owner, root, _qValues, _ellipticCurve);
+    ) public returns (MyTouchIdWallet) {
+        return new MyTouchIdWallet{salt: bytes32(salt)}(entryPoint, owner, _qValues, _ellipticCurve);
     }
 
     function getDeploymentAddress(
         IEntryPoint entryPoint,
         address owner,
-        uint256 root,
         uint256 salt,
         uint256[2] memory _qValues, 
         address _ellipticCurve
@@ -37,8 +35,8 @@ contract MyWalletDeployer {
                             salt,
                             keccak256(
                                 abi.encodePacked(
-                                    type(MyWallet).creationCode,
-                                    abi.encode(entryPoint, owner, root, _qValues, _ellipticCurve)
+                                    type(MyTouchIdWallet).creationCode,
+                                    abi.encode(entryPoint, owner, _qValues, _ellipticCurve)
                                 )
                             )
                         )

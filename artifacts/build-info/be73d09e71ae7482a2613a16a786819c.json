@@ -1,5 +1,5 @@
 {
-  "id": "326bdbf505a5af822ef8aabef8ea174f",
+  "id": "be73d09e71ae7482a2613a16a786819c",
   "_format": "hh-sol-build-info-1",
   "solcVersion": "0.8.12",
   "solcLongVersion": "0.8.12+commit.f00d7308",
@@ -49,7 +49,7 @@
         "content": "// SPDX-License-Identifier: GPL-3.0-only\npragma solidity ^0.8.12;\n\nimport \"../interfaces/IStakeManager.sol\";\n\n/* solhint-disable avoid-low-level-calls */\n/* solhint-disable not-rely-on-time */\n/**\n * manage deposits and stakes.\n * deposit is just a balance used to pay for UserOperations (either by a paymaster or a wallet)\n * stake is value locked for at least \"unstakeDelay\" by a paymaster.\n */\nabstract contract StakeManager is IStakeManager {\n\n    /**\n     * minimum time (in seconds) required to lock a paymaster stake before it can be withdraw.\n     */\n    uint32 immutable public unstakeDelaySec;\n\n    /**\n     * minimum value required to stake for a paymaster\n     */\n    uint256 immutable public paymasterStake;\n\n    constructor(uint256 _paymasterStake, uint32 _unstakeDelaySec) {\n        unstakeDelaySec = _unstakeDelaySec;\n        paymasterStake = _paymasterStake;\n    }\n\n    /// maps paymaster to their deposits and stakes\n    mapping(address => DepositInfo) public deposits;\n\n    function getDepositInfo(address account) public view returns (DepositInfo memory info) {\n        return deposits[account];\n    }\n\n    /// return the deposit (for gas payment) of the account\n    function balanceOf(address account) public view returns (uint256) {\n        return deposits[account].deposit;\n    }\n\n    receive() external payable {\n        depositTo(msg.sender);\n    }\n\n    function internalIncrementDeposit(address account, uint256 amount) internal {\n        DepositInfo storage info = deposits[account];\n        uint256 newAmount = info.deposit + amount;\n        require(newAmount <= type(uint112).max, \"deposit overflow\");\n        info.deposit = uint112(newAmount);\n    }\n\n    /**\n     * add to the deposit of the given account\n     */\n    function depositTo(address account) public payable {\n        internalIncrementDeposit(account, msg.value);\n        DepositInfo storage info = deposits[account];\n        emit Deposited(account, info.deposit);\n    }\n\n    /**\n     * add to the account's stake - amount and delay\n     * any pending unstake is first cancelled.\n     * @param _unstakeDelaySec the new lock duration before the deposit can be withdrawn.\n     */\n    function addStake(uint32 _unstakeDelaySec) public payable {\n        DepositInfo storage info = deposits[msg.sender];\n        require(_unstakeDelaySec >= unstakeDelaySec, \"unstake delay too low\");\n        require(_unstakeDelaySec >= info.unstakeDelaySec, \"cannot decrease unstake time\");\n        uint256 stake = info.stake + msg.value;\n        require(stake >= paymasterStake, \"stake value too low\");\n        require(stake < type(uint112).max, \"stake overflow\");\n        deposits[msg.sender] = DepositInfo(\n            info.deposit,\n            true,\n            uint112(stake),\n            _unstakeDelaySec,\n            0\n        );\n        emit StakeLocked(msg.sender, stake, _unstakeDelaySec);\n    }\n\n    /**\n     * attempt to unlock the stake.\n     * the value can be withdrawn (using withdrawStake) after the unstake delay.\n     */\n    function unlockStake() external {\n        DepositInfo storage info = deposits[msg.sender];\n        require(info.unstakeDelaySec != 0, \"not staked\");\n        require(info.staked, \"already unstaking\");\n        uint64 withdrawTime = uint64(block.timestamp) + info.unstakeDelaySec;\n        info.withdrawTime = withdrawTime;\n        info.staked = false;\n        emit StakeUnlocked(msg.sender, withdrawTime);\n    }\n\n\n    /**\n     * withdraw from the (unlocked) stake.\n     * must first call unlockStake and wait for the unstakeDelay to pass\n     * @param withdrawAddress the address to send withdrawn value.\n     */\n    function withdrawStake(address payable withdrawAddress) external {\n        DepositInfo storage info = deposits[msg.sender];\n        uint256 stake = info.stake;\n        require(stake > 0, \"No stake to withdraw\");\n        require(info.withdrawTime > 0, \"must call unlockStake() first\");\n        require(info.withdrawTime <= block.timestamp, \"Stake withdrawal is not due\");\n        info.unstakeDelaySec = 0;\n        info.withdrawTime = 0;\n        info.stake = 0;\n        emit StakeWithdrawn(msg.sender, withdrawAddress, stake);\n        (bool success,) = withdrawAddress.call{value : stake}(\"\");\n        require(success, \"failed to withdraw stake\");\n    }\n\n    /**\n     * withdraw from the deposit.\n     * @param withdrawAddress the address to send withdrawn value.\n     * @param withdrawAmount the amount to withdraw.\n     */\n    function withdrawTo(address payable withdrawAddress, uint256 withdrawAmount) external {\n        DepositInfo memory info = deposits[msg.sender];\n        require(withdrawAmount <= info.deposit, \"Withdraw amount too large\");\n        info.deposit = uint112(info.deposit - withdrawAmount);\n        emit Withdrawn(msg.sender, withdrawAddress, withdrawAmount);\n        (bool success,) = withdrawAddress.call{value : withdrawAmount}(\"\");\n        require(success, \"failed to withdraw\");\n    }\n}\n"
       },
       "contracts/core/BaseWallet.sol": {
-        "content": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.12;\n\n/* solhint-disable avoid-low-level-calls */\n/* solhint-disable no-inline-assembly */\n/* solhint-disable reason-string */\n\nimport \"../interfaces/IWallet.sol\";\nimport \"../interfaces/IEntryPoint.sol\";\n\n/**\n * Basic wallet implementation.\n * this contract provides the basic logic for implementing the IWallet interface  - validateUserOp\n * specific wallet implementation should inherit it and provide the wallet-specific logic\n */\nabstract contract BaseWallet is IWallet {\n    using UserOperationLib for UserOperation;\n\n    /**\n     * return the wallet nonce.\n     * subclass should return a nonce value that is used both by _validateAndUpdateNonce, and by the external provider (to read the current nonce)\n     */\n    function nonce() public view virtual returns (uint256);\n\n    /**\n     * return the entryPoint used by this wallet.\n     * subclass should return the current entryPoint used by this wallet.\n     */\n    function entryPoint() public view virtual returns (IEntryPoint);\n\n    /**\n     * Validate user's signature and nonce.\n     * subclass doesn't override this method. instead, it should override the specific internal validation methods.\n     */\n    function validateUserOp(UserOperation calldata userOp, bytes32 requestId, address aggregator, uint256 missingWalletFunds) external override {\n        _requireFromEntryPoint();\n        _validateSignature(userOp, requestId, aggregator);\n        //during construction, the \"nonce\" field hold the salt.\n        // if we assert it is zero, then we allow only a single wallet per owner.\n        if (userOp.initCode.length == 0) {\n            _validateAndUpdateNonce(userOp);\n        }\n        _payPrefund(missingWalletFunds);\n    }\n\n    /**\n     * ensure the request comes from the known entrypoint.\n     */\n    function _requireFromEntryPoint() internal virtual view {\n        require(msg.sender == address(entryPoint()), \"wallet: not from EntryPoint\");\n    }\n\n    /**\n     * validate the signature is valid for this message.\n     * @param userOp validate the userOp.signature field\n     * @param requestId convenient field: the hash of the request, to check the signature against\n     *          (also hashes the entrypoint and chain-id)\n     * @param aggregator the current aggregator. can be ignored by wallets that don't use aggregators\n     */\n    function _validateSignature(UserOperation calldata userOp, bytes32 requestId, address aggregator) internal virtual view;\n\n    /**\n     * validate the current nonce matches the UserOperation nonce.\n     * then it should update the wallet's state to prevent replay of this UserOperation.\n     * called only if initCode is empty (since \"nonce\" field is used as \"salt\" on wallet creation)\n     * @param userOp the op to validate.\n     */\n    function _validateAndUpdateNonce(UserOperation calldata userOp) internal virtual;\n\n    /**\n     * sends to the entrypoint (msg.sender) the missing funds for this transaction.\n     * subclass MAY override this method for better funds management\n     * (e.g. send to the entryPoint more than the minimum required, so that in future transactions\n     * it will not be required to send again)\n     * @param missingWalletFunds the minimum value this method should send the entrypoint.\n     *  this value MAY be zero, in case there is enough deposit, or the userOp has a paymaster.\n     */\n    function _payPrefund(uint256 missingWalletFunds) internal virtual {\n        if (missingWalletFunds != 0) {\n            (bool success,) = payable(msg.sender).call{value : missingWalletFunds, gas : type(uint256).max}(\"\");\n            (success);\n            //ignore failure (its EntryPoint's job to verify, not wallet.)\n        }\n    }\n\n    /**\n     * expose an api to modify the entryPoint.\n     * must be called by current \"admin\" of the wallet.\n     * @param newEntryPoint the new entrypoint to trust.\n     */\n    function updateEntryPoint(address newEntryPoint) external {\n        _requireFromAdmin();\n        _updateEntryPoint(newEntryPoint);\n    }\n\n    /**\n     * ensure the caller is allowed \"admin\" operations (such as changing the entryPoint)\n     * default implementation trust the wallet itself (or any signer that passes \"validateUserOp\")\n     * to be the \"admin\"\n     */\n    function _requireFromAdmin() internal view virtual {\n        require(msg.sender == address(this) || msg.sender == address(entryPoint()), \"not admin\");\n    }\n\n    /**\n     * update the current entrypoint.\n     * subclass should override and update current entrypoint\n     */\n    function _updateEntryPoint(address) internal virtual;\n}\n"
+        "content": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.12;\n\n/* solhint-disable avoid-low-level-calls */\n/* solhint-disable no-inline-assembly */\n/* solhint-disable reason-string */\n\nimport \"../interfaces/IWallet.sol\";\nimport \"../interfaces/IEntryPoint.sol\";\n\n/**\n * Basic wallet implementation.\n * this contract provides the basic logic for implementing the IWallet interface  - validateUserOp\n * specific wallet implementation should inherit it and provide the wallet-specific logic\n */\nabstract contract BaseWallet is IWallet {\n    using UserOperationLib for UserOperation;\n\n    /**\n     * return the wallet nonce.\n     * subclass should return a nonce value that is used both by _validateAndUpdateNonce, and by the external provider (to read the current nonce)\n     */\n    function nonce() public view virtual returns (uint256);\n\n    /**\n     * return the entryPoint used by this wallet.\n     * subclass should return the current entryPoint used by this wallet.\n     */\n    function entryPoint() public view virtual returns (IEntryPoint);\n\n    /**\n     * Validate user's signature and nonce.\n     * subclass doesn't override this method. instead, it should override the specific internal validation methods.\n     */\n    function validateUserOp(UserOperation calldata userOp, bytes32 requestId, address aggregator, uint256 missingWalletFunds) external override {\n        _requireFromEntryPoint();\n        _validateSignature(userOp, requestId, aggregator);\n        //during construction, the \"nonce\" field hold the salt.\n        // if we assert it is zero, then we allow only a single wallet per owner.\n        if (userOp.initCode.length == 0) {\n            _validateAndUpdateNonce(userOp);\n        }\n        _payPrefund(missingWalletFunds);\n    }\n\n    /**\n     * ensure the request comes from the known entrypoint.\n     */\n    function _requireFromEntryPoint() internal virtual view {\n        require(msg.sender == address(entryPoint()), \"wallet: not from EntryPoint\");\n    }\n\n    /**\n     * validate the signature is valid for this message.\n     * @param userOp validate the userOp.signature field\n     * @param requestId convenient field: the hash of the request, to check the signature against\n     *          (also hashes the entrypoint and chain-id)\n     * @param aggregator the current aggregator. can be ignored by wallets that don't use aggregators\n     */\n    function _validateSignature(UserOperation calldata userOp, bytes32 requestId, address aggregator) internal virtual;\n\n    /**\n     * validate the current nonce matches the UserOperation nonce.\n     * then it should update the wallet's state to prevent replay of this UserOperation.\n     * called only if initCode is empty (since \"nonce\" field is used as \"salt\" on wallet creation)\n     * @param userOp the op to validate.\n     */\n    function _validateAndUpdateNonce(UserOperation calldata userOp) internal virtual;\n\n    /**\n     * sends to the entrypoint (msg.sender) the missing funds for this transaction.\n     * subclass MAY override this method for better funds management\n     * (e.g. send to the entryPoint more than the minimum required, so that in future transactions\n     * it will not be required to send again)\n     * @param missingWalletFunds the minimum value this method should send the entrypoint.\n     *  this value MAY be zero, in case there is enough deposit, or the userOp has a paymaster.\n     */\n    function _payPrefund(uint256 missingWalletFunds) internal virtual {\n        if (missingWalletFunds != 0) {\n            (bool success,) = payable(msg.sender).call{value : missingWalletFunds, gas : type(uint256).max}(\"\");\n            (success);\n            //ignore failure (its EntryPoint's job to verify, not wallet.)\n        }\n    }\n\n    /**\n     * expose an api to modify the entryPoint.\n     * must be called by current \"admin\" of the wallet.\n     * @param newEntryPoint the new entrypoint to trust.\n     */\n    function updateEntryPoint(address newEntryPoint) external {\n        _requireFromAdmin();\n        _updateEntryPoint(newEntryPoint);\n    }\n\n    /**\n     * ensure the caller is allowed \"admin\" operations (such as changing the entryPoint)\n     * default implementation trust the wallet itself (or any signer that passes \"validateUserOp\")\n     * to be the \"admin\"\n     */\n    function _requireFromAdmin() internal view virtual {\n        require(msg.sender == address(this) || msg.sender == address(entryPoint()), \"not admin\");\n    }\n\n    /**\n     * update the current entrypoint.\n     * subclass should override and update current entrypoint\n     */\n    function _updateEntryPoint(address) internal virtual;\n}\n"
       }
     },
     "settings": {
@@ -636,7 +636,7 @@
               "validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)": "0825d1fc"
             }
           },
-          "metadata": "{\"compiler\":{\"version\":\"0.8.12+commit.f00d7308\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"entryPoint\",\"outputs\":[{\"internalType\":\"contract IEntryPoint\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newEntryPoint\",\"type\":\"address\"}],\"name\":\"updateEntryPoint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"callGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"verificationGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxPriorityFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct UserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"aggregator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"missingWalletFunds\",\"type\":\"uint256\"}],\"name\":\"validateUserOp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"updateEntryPoint(address)\":{\"params\":{\"newEntryPoint\":\"the new entrypoint to trust.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"entryPoint()\":{\"notice\":\"return the entryPoint used by this wallet. subclass should return the current entryPoint used by this wallet.\"},\"nonce()\":{\"notice\":\"return the wallet nonce. subclass should return a nonce value that is used both by _validateAndUpdateNonce, and by the external provider (to read the current nonce)\"},\"updateEntryPoint(address)\":{\"notice\":\"expose an api to modify the entryPoint. must be called by current \\\"admin\\\" of the wallet.\"},\"validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)\":{\"notice\":\"Validate user's signature and nonce. subclass doesn't override this method. instead, it should override the specific internal validation methods.\"}},\"notice\":\"Basic wallet implementation. this contract provides the basic logic for implementing the IWallet interface  - validateUserOp specific wallet implementation should inherit it and provide the wallet-specific logic\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/core/BaseWallet.sol\":\"BaseWallet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/core/BaseWallet.sol\":{\"keccak256\":\"0x3d9a244b31521b59d7716db9412691d411e8b7d026413a769b8cb8065c7e3e69\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://42e1b21a7b7005cd62ca2d4fa0f135f3e022604e877c34ed0e207c05e59c8bfd\",\"dweb:/ipfs/QmV7G5U4tfaPf4Y2NG85x4ojZvHorgocQcsJSmFAVUHmCU\"]},\"contracts/interfaces/IAggregator.sol\":{\"keccak256\":\"0x3a3a7bf97e9b17144748bcd745edc0b8c4605781b349976db17a3031528f360c\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://26c7b8494f8b311ae82e69c302134f423d9bf84aafa545dbdf633926cbb34d6e\",\"dweb:/ipfs/QmZ5sRy7meUhtJX9wF5f5RkWRkJoJriTDWxpCAC7KVCaqi\"]},\"contracts/interfaces/IEntryPoint.sol\":{\"keccak256\":\"0xf052400aff95b11c5e9af5f25702d0b3a4207872e8d34beb4c52dbe048532e85\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://5f3956b507de8374a7e3250879fe98ccef9de6a660455903fa7f7dd4b5b7b895\",\"dweb:/ipfs/QmcfCH91igjJn6oRMfQrUFBNriu32yZXdLJ7kkv5pv2PWp\"]},\"contracts/interfaces/IStakeManager.sol\":{\"keccak256\":\"0xf2a242b657ba0a1568022752a2b9e3bbf83edb5a980fdcc52c1258c7c8d90bd3\",\"license\":\"GPL-3.0-only\",\"urls\":[\"bzz-raw://0ed64d8410c02a0a4fa49d231e9cc2ff23b0720a40372feaec9841611b24fe99\",\"dweb:/ipfs/QmXHnwoKrdvdnPrsYaE263ZBXD2xf4CCT8VTsRJqNQ4gfr\"]},\"contracts/interfaces/IWallet.sol\":{\"keccak256\":\"0x9faeb4f22e20c1f05ac617adf0a9b66bd5d32c32674fc227cdae6d11f8491e4f\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://7c1c4b30823e52953f2876d065e35df2000a5a4ad789ce99ced5aaad77fa4678\",\"dweb:/ipfs/QmYdRTqC3G165y7ccn1EbZKEhvE6WipdSHwppBsQ3W7M1A\"]},\"contracts/interfaces/UserOperation.sol\":{\"keccak256\":\"0x223214375bdcf5670f16cbe4697ce5eae0cd673760db92491ad37967fbb3a6d0\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://6ed600dd3c287141469956bba36ed1c528d9694c8798f4d3083c3632a24aaca9\",\"dweb:/ipfs/QmPNMkWg6m1aRRcZaMkFgeFKRq7tKSkHgEJLZcQ3aHdyHp\"]}},\"version\":1}"
+          "metadata": "{\"compiler\":{\"version\":\"0.8.12+commit.f00d7308\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"entryPoint\",\"outputs\":[{\"internalType\":\"contract IEntryPoint\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newEntryPoint\",\"type\":\"address\"}],\"name\":\"updateEntryPoint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"callGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"verificationGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxPriorityFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct UserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"requestId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"aggregator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"missingWalletFunds\",\"type\":\"uint256\"}],\"name\":\"validateUserOp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"updateEntryPoint(address)\":{\"params\":{\"newEntryPoint\":\"the new entrypoint to trust.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"entryPoint()\":{\"notice\":\"return the entryPoint used by this wallet. subclass should return the current entryPoint used by this wallet.\"},\"nonce()\":{\"notice\":\"return the wallet nonce. subclass should return a nonce value that is used both by _validateAndUpdateNonce, and by the external provider (to read the current nonce)\"},\"updateEntryPoint(address)\":{\"notice\":\"expose an api to modify the entryPoint. must be called by current \\\"admin\\\" of the wallet.\"},\"validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)\":{\"notice\":\"Validate user's signature and nonce. subclass doesn't override this method. instead, it should override the specific internal validation methods.\"}},\"notice\":\"Basic wallet implementation. this contract provides the basic logic for implementing the IWallet interface  - validateUserOp specific wallet implementation should inherit it and provide the wallet-specific logic\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/core/BaseWallet.sol\":\"BaseWallet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/core/BaseWallet.sol\":{\"keccak256\":\"0x046e6125bbec004dbf7124e430cae29ab1eef6be7bf321adf482fc7fde760a91\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://3a2e2844f2e8ef69977e474cc797f117e936d07a1ac1978955ee123ea400e50d\",\"dweb:/ipfs/QmZHKomUyKW5T3ZYjAbAXfnsHVtuh1r99V52b5uMMWbXkd\"]},\"contracts/interfaces/IAggregator.sol\":{\"keccak256\":\"0x3a3a7bf97e9b17144748bcd745edc0b8c4605781b349976db17a3031528f360c\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://26c7b8494f8b311ae82e69c302134f423d9bf84aafa545dbdf633926cbb34d6e\",\"dweb:/ipfs/QmZ5sRy7meUhtJX9wF5f5RkWRkJoJriTDWxpCAC7KVCaqi\"]},\"contracts/interfaces/IEntryPoint.sol\":{\"keccak256\":\"0xf052400aff95b11c5e9af5f25702d0b3a4207872e8d34beb4c52dbe048532e85\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://5f3956b507de8374a7e3250879fe98ccef9de6a660455903fa7f7dd4b5b7b895\",\"dweb:/ipfs/QmcfCH91igjJn6oRMfQrUFBNriu32yZXdLJ7kkv5pv2PWp\"]},\"contracts/interfaces/IStakeManager.sol\":{\"keccak256\":\"0xf2a242b657ba0a1568022752a2b9e3bbf83edb5a980fdcc52c1258c7c8d90bd3\",\"license\":\"GPL-3.0-only\",\"urls\":[\"bzz-raw://0ed64d8410c02a0a4fa49d231e9cc2ff23b0720a40372feaec9841611b24fe99\",\"dweb:/ipfs/QmXHnwoKrdvdnPrsYaE263ZBXD2xf4CCT8VTsRJqNQ4gfr\"]},\"contracts/interfaces/IWallet.sol\":{\"keccak256\":\"0x9faeb4f22e20c1f05ac617adf0a9b66bd5d32c32674fc227cdae6d11f8491e4f\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://7c1c4b30823e52953f2876d065e35df2000a5a4ad789ce99ced5aaad77fa4678\",\"dweb:/ipfs/QmYdRTqC3G165y7ccn1EbZKEhvE6WipdSHwppBsQ3W7M1A\"]},\"contracts/interfaces/UserOperation.sol\":{\"keccak256\":\"0x223214375bdcf5670f16cbe4697ce5eae0cd673760db92491ad37967fbb3a6d0\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://6ed600dd3c287141469956bba36ed1c528d9694c8798f4d3083c3632a24aaca9\",\"dweb:/ipfs/QmPNMkWg6m1aRRcZaMkFgeFKRq7tKSkHgEJLZcQ3aHdyHp\"]}},\"version\":1}"
         }
       },
       "contracts/core/EntryPoint.sol": {
@@ -36550,8 +36550,8 @@
                             "referencedDeclaration": 432,
                             "src": "1409:18:3",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_internal_view$_t_struct$_UserOperation_$3084_calldata_ptr_$_t_bytes32_$_t_address_$returns$__$",
-                              "typeString": "function (struct UserOperation calldata,bytes32,address) view"
+                              "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_UserOperation_$3084_calldata_ptr_$_t_bytes32_$_t_address_$returns$__$",
+                              "typeString": "function (struct UserOperation calldata,bytes32,address)"
                             }
                           },
                           "id": 386,
@@ -37258,11 +37258,11 @@
                     "id": 431,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "2492:0:3"
+                    "src": "2487:0:3"
                   },
                   "scope": 518,
-                  "src": "2373:120:3",
-                  "stateMutability": "view",
+                  "src": "2373:115:3",
+                  "stateMutability": "nonpayable",
                   "virtual": true,
                   "visibility": "internal"
                 },
@@ -37270,7 +37270,7 @@
                   "documentation": {
                     "id": 433,
                     "nodeType": "StructuredDocumentation",
-                    "src": "2499:307:3",
+                    "src": "2494:307:3",
                     "text": " validate the current nonce matches the UserOperation nonce.\n then it should update the wallet's state to prevent replay of this UserOperation.\n called only if initCode is empty (since \"nonce\" field is used as \"salt\" on wallet creation)\n @param userOp the op to validate."
                   },
                   "id": 439,
@@ -37278,7 +37278,7 @@
                   "kind": "function",
                   "modifiers": [],
                   "name": "_validateAndUpdateNonce",
-                  "nameLocation": "2820:23:3",
+                  "nameLocation": "2815:23:3",
                   "nodeType": "FunctionDefinition",
                   "parameters": {
                     "id": 437,
@@ -37289,10 +37289,10 @@
                         "id": 436,
                         "mutability": "mutable",
                         "name": "userOp",
-                        "nameLocation": "2867:6:3",
+                        "nameLocation": "2862:6:3",
                         "nodeType": "VariableDeclaration",
                         "scope": 439,
-                        "src": "2844:29:3",
+                        "src": "2839:29:3",
                         "stateVariable": false,
                         "storageLocation": "calldata",
                         "typeDescriptions": {
@@ -37307,10 +37307,10 @@
                             "name": "UserOperation",
                             "nodeType": "IdentifierPath",
                             "referencedDeclaration": 3084,
-                            "src": "2844:13:3"
+                            "src": "2839:13:3"
                           },
                           "referencedDeclaration": 3084,
-                          "src": "2844:13:3",
+                          "src": "2839:13:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_UserOperation_$3084_storage_ptr",
                             "typeString": "struct UserOperation"
@@ -37319,16 +37319,16 @@
                         "visibility": "internal"
                       }
                     ],
-                    "src": "2843:31:3"
+                    "src": "2838:31:3"
                   },
                   "returnParameters": {
                     "id": 438,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "2891:0:3"
+                    "src": "2886:0:3"
                   },
                   "scope": 518,
-                  "src": "2811:81:3",
+                  "src": "2806:81:3",
                   "stateMutability": "nonpayable",
                   "virtual": true,
                   "visibility": "internal"
@@ -37337,7 +37337,7 @@
                   "body": {
                     "id": 471,
                     "nodeType": "Block",
-                    "src": "3465:267:3",
+                    "src": "3460:267:3",
                     "statements": [
                       {
                         "condition": {
@@ -37356,7 +37356,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 442,
-                            "src": "3479:18:3",
+                            "src": "3474:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
                               "typeString": "uint256"
@@ -37373,14 +37373,14 @@
                             "kind": "number",
                             "lValueRequested": false,
                             "nodeType": "Literal",
-                            "src": "3501:1:3",
+                            "src": "3496:1:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_rational_0_by_1",
                               "typeString": "int_const 0"
                             },
                             "value": "0"
                           },
-                          "src": "3479:23:3",
+                          "src": "3474:23:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bool",
                             "typeString": "bool"
@@ -37388,11 +37388,11 @@
                         },
                         "id": 470,
                         "nodeType": "IfStatement",
-                        "src": "3475:251:3",
+                        "src": "3470:251:3",
                         "trueBody": {
                           "id": 469,
                           "nodeType": "Block",
-                          "src": "3504:222:3",
+                          "src": "3499:222:3",
                           "statements": [
                             {
                               "assignments": [
@@ -37405,10 +37405,10 @@
                                   "id": 449,
                                   "mutability": "mutable",
                                   "name": "success",
-                                  "nameLocation": "3524:7:3",
+                                  "nameLocation": "3519:7:3",
                                   "nodeType": "VariableDeclaration",
                                   "scope": 469,
-                                  "src": "3519:12:3",
+                                  "src": "3514:12:3",
                                   "stateVariable": false,
                                   "storageLocation": "default",
                                   "typeDescriptions": {
@@ -37419,7 +37419,7 @@
                                     "id": 448,
                                     "name": "bool",
                                     "nodeType": "ElementaryTypeName",
-                                    "src": "3519:4:3",
+                                    "src": "3514:4:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_bool",
                                       "typeString": "bool"
@@ -37441,7 +37441,7 @@
                                     "kind": "string",
                                     "lValueRequested": false,
                                     "nodeType": "Literal",
-                                    "src": "3614:2:3",
+                                    "src": "3609:2:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
                                       "typeString": "literal_string \"\""
@@ -37472,7 +37472,7 @@
                                             "nodeType": "Identifier",
                                             "overloadedDeclarations": [],
                                             "referencedDeclaration": -15,
-                                            "src": "3544:3:3",
+                                            "src": "3539:3:3",
                                             "typeDescriptions": {
                                               "typeIdentifier": "t_magic_message",
                                               "typeString": "msg"
@@ -37485,7 +37485,7 @@
                                           "lValueRequested": false,
                                           "memberName": "sender",
                                           "nodeType": "MemberAccess",
-                                          "src": "3544:10:3",
+                                          "src": "3539:10:3",
                                           "typeDescriptions": {
                                             "typeIdentifier": "t_address",
                                             "typeString": "address"
@@ -37505,7 +37505,7 @@
                                         "isPure": true,
                                         "lValueRequested": false,
                                         "nodeType": "ElementaryTypeNameExpression",
-                                        "src": "3536:8:3",
+                                        "src": "3531:8:3",
                                         "typeDescriptions": {
                                           "typeIdentifier": "t_type$_t_address_payable_$",
                                           "typeString": "type(address payable)"
@@ -37514,7 +37514,7 @@
                                           "id": 450,
                                           "name": "address",
                                           "nodeType": "ElementaryTypeName",
-                                          "src": "3536:8:3",
+                                          "src": "3531:8:3",
                                           "stateMutability": "payable",
                                           "typeDescriptions": {}
                                         }
@@ -37527,7 +37527,7 @@
                                       "lValueRequested": false,
                                       "names": [],
                                       "nodeType": "FunctionCall",
-                                      "src": "3536:19:3",
+                                      "src": "3531:19:3",
                                       "tryCall": false,
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_address_payable",
@@ -37541,7 +37541,7 @@
                                     "lValueRequested": false,
                                     "memberName": "call",
                                     "nodeType": "MemberAccess",
-                                    "src": "3536:24:3",
+                                    "src": "3531:24:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_barecall_payable$_t_bytes_memory_ptr_$returns$_t_bool_$_t_bytes_memory_ptr_$",
                                       "typeString": "function (bytes memory) payable returns (bool,bytes memory)"
@@ -37564,7 +37564,7 @@
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
                                       "referencedDeclaration": 442,
-                                      "src": "3569:18:3",
+                                      "src": "3564:18:3",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -37580,7 +37580,7 @@
                                             "isPure": true,
                                             "lValueRequested": false,
                                             "nodeType": "ElementaryTypeNameExpression",
-                                            "src": "3600:7:3",
+                                            "src": "3595:7:3",
                                             "typeDescriptions": {
                                               "typeIdentifier": "t_type$_t_uint256_$",
                                               "typeString": "type(uint256)"
@@ -37589,7 +37589,7 @@
                                               "id": 458,
                                               "name": "uint256",
                                               "nodeType": "ElementaryTypeName",
-                                              "src": "3600:7:3",
+                                              "src": "3595:7:3",
                                               "typeDescriptions": {}
                                             }
                                           }
@@ -37606,7 +37606,7 @@
                                           "nodeType": "Identifier",
                                           "overloadedDeclarations": [],
                                           "referencedDeclaration": -27,
-                                          "src": "3595:4:3",
+                                          "src": "3590:4:3",
                                           "typeDescriptions": {
                                             "typeIdentifier": "t_function_metatype_pure$__$returns$__$",
                                             "typeString": "function () pure"
@@ -37620,7 +37620,7 @@
                                         "lValueRequested": false,
                                         "names": [],
                                         "nodeType": "FunctionCall",
-                                        "src": "3595:13:3",
+                                        "src": "3590:13:3",
                                         "tryCall": false,
                                         "typeDescriptions": {
                                           "typeIdentifier": "t_magic_meta_type_t_uint256",
@@ -37634,14 +37634,14 @@
                                       "lValueRequested": false,
                                       "memberName": "max",
                                       "nodeType": "MemberAccess",
-                                      "src": "3595:17:3",
+                                      "src": "3590:17:3",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     }
                                   ],
-                                  "src": "3536:77:3",
+                                  "src": "3531:77:3",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_function_barecall_payable$_t_bytes_memory_ptr_$returns$_t_bool_$_t_bytes_memory_ptr_$gasvalue",
                                     "typeString": "function (bytes memory) payable returns (bool,bytes memory)"
@@ -37655,7 +37655,7 @@
                                 "lValueRequested": false,
                                 "names": [],
                                 "nodeType": "FunctionCall",
-                                "src": "3536:81:3",
+                                "src": "3531:81:3",
                                 "tryCall": false,
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_tuple$_t_bool_$_t_bytes_memory_ptr_$",
@@ -37663,7 +37663,7 @@
                                 }
                               },
                               "nodeType": "VariableDeclarationStatement",
-                              "src": "3518:99:3"
+                              "src": "3513:99:3"
                             },
                             {
                               "expression": {
@@ -37674,7 +37674,7 @@
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
                                     "referencedDeclaration": 449,
-                                    "src": "3632:7:3",
+                                    "src": "3627:7:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_bool",
                                       "typeString": "bool"
@@ -37688,7 +37688,7 @@
                                 "isPure": false,
                                 "lValueRequested": false,
                                 "nodeType": "TupleExpression",
-                                "src": "3631:9:3",
+                                "src": "3626:9:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_bool",
                                   "typeString": "bool"
@@ -37696,7 +37696,7 @@
                               },
                               "id": 468,
                               "nodeType": "ExpressionStatement",
-                              "src": "3631:9:3"
+                              "src": "3626:9:3"
                             }
                           ]
                         }
@@ -37706,7 +37706,7 @@
                   "documentation": {
                     "id": 440,
                     "nodeType": "StructuredDocumentation",
-                    "src": "2898:496:3",
+                    "src": "2893:496:3",
                     "text": " sends to the entrypoint (msg.sender) the missing funds for this transaction.\n subclass MAY override this method for better funds management\n (e.g. send to the entryPoint more than the minimum required, so that in future transactions\n it will not be required to send again)\n @param missingWalletFunds the minimum value this method should send the entrypoint.\n  this value MAY be zero, in case there is enough deposit, or the userOp has a paymaster."
                   },
                   "id": 472,
@@ -37714,7 +37714,7 @@
                   "kind": "function",
                   "modifiers": [],
                   "name": "_payPrefund",
-                  "nameLocation": "3408:11:3",
+                  "nameLocation": "3403:11:3",
                   "nodeType": "FunctionDefinition",
                   "parameters": {
                     "id": 443,
@@ -37725,10 +37725,10 @@
                         "id": 442,
                         "mutability": "mutable",
                         "name": "missingWalletFunds",
-                        "nameLocation": "3428:18:3",
+                        "nameLocation": "3423:18:3",
                         "nodeType": "VariableDeclaration",
                         "scope": 472,
-                        "src": "3420:26:3",
+                        "src": "3415:26:3",
                         "stateVariable": false,
                         "storageLocation": "default",
                         "typeDescriptions": {
@@ -37739,7 +37739,7 @@
                           "id": 441,
                           "name": "uint256",
                           "nodeType": "ElementaryTypeName",
-                          "src": "3420:7:3",
+                          "src": "3415:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -37748,16 +37748,16 @@
                         "visibility": "internal"
                       }
                     ],
-                    "src": "3419:28:3"
+                    "src": "3414:28:3"
                   },
                   "returnParameters": {
                     "id": 444,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "3465:0:3"
+                    "src": "3460:0:3"
                   },
                   "scope": 518,
-                  "src": "3399:333:3",
+                  "src": "3394:333:3",
                   "stateMutability": "nonpayable",
                   "virtual": true,
                   "visibility": "internal"
@@ -37766,7 +37766,7 @@
                   "body": {
                     "id": 485,
                     "nodeType": "Block",
-                    "src": "3972:78:3",
+                    "src": "3967:78:3",
                     "statements": [
                       {
                         "expression": {
@@ -37778,7 +37778,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 511,
-                            "src": "3982:17:3",
+                            "src": "3977:17:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$__$returns$__$",
                               "typeString": "function () view"
@@ -37792,7 +37792,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "3982:19:3",
+                          "src": "3977:19:3",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
@@ -37801,7 +37801,7 @@
                         },
                         "id": 480,
                         "nodeType": "ExpressionStatement",
-                        "src": "3982:19:3"
+                        "src": "3977:19:3"
                       },
                       {
                         "expression": {
@@ -37812,7 +37812,7 @@
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 475,
-                              "src": "4029:13:3",
+                              "src": "4024:13:3",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
@@ -37831,7 +37831,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 517,
-                            "src": "4011:17:3",
+                            "src": "4006:17:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
                               "typeString": "function (address)"
@@ -37845,7 +37845,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "4011:32:3",
+                          "src": "4006:32:3",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
@@ -37854,14 +37854,14 @@
                         },
                         "id": 484,
                         "nodeType": "ExpressionStatement",
-                        "src": "4011:32:3"
+                        "src": "4006:32:3"
                       }
                     ]
                   },
                   "documentation": {
                     "id": 473,
                     "nodeType": "StructuredDocumentation",
-                    "src": "3738:171:3",
+                    "src": "3733:171:3",
                     "text": " expose an api to modify the entryPoint.\n must be called by current \"admin\" of the wallet.\n @param newEntryPoint the new entrypoint to trust."
                   },
                   "functionSelector": "1b71bb6e",
@@ -37870,7 +37870,7 @@
                   "kind": "function",
                   "modifiers": [],
                   "name": "updateEntryPoint",
-                  "nameLocation": "3923:16:3",
+                  "nameLocation": "3918:16:3",
                   "nodeType": "FunctionDefinition",
                   "parameters": {
                     "id": 476,
@@ -37881,10 +37881,10 @@
                         "id": 475,
                         "mutability": "mutable",
                         "name": "newEntryPoint",
-                        "nameLocation": "3948:13:3",
+                        "nameLocation": "3943:13:3",
                         "nodeType": "VariableDeclaration",
                         "scope": 486,
-                        "src": "3940:21:3",
+                        "src": "3935:21:3",
                         "stateVariable": false,
                         "storageLocation": "default",
                         "typeDescriptions": {
@@ -37895,7 +37895,7 @@
                           "id": 474,
                           "name": "address",
                           "nodeType": "ElementaryTypeName",
-                          "src": "3940:7:3",
+                          "src": "3935:7:3",
                           "stateMutability": "nonpayable",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
@@ -37905,16 +37905,16 @@
                         "visibility": "internal"
                       }
                     ],
-                    "src": "3939:23:3"
+                    "src": "3934:23:3"
                   },
                   "returnParameters": {
                     "id": 477,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "3972:0:3"
+                    "src": "3967:0:3"
                   },
                   "scope": 518,
-                  "src": "3914:136:3",
+                  "src": "3909:136:3",
                   "stateMutability": "nonpayable",
                   "virtual": false,
                   "visibility": "external"
@@ -37923,7 +37923,7 @@
                   "body": {
                     "id": 510,
                     "nodeType": "Block",
-                    "src": "4336:105:3",
+                    "src": "4331:105:3",
                     "statements": [
                       {
                         "expression": {
@@ -37955,7 +37955,7 @@
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
                                     "referencedDeclaration": -15,
-                                    "src": "4354:3:3",
+                                    "src": "4349:3:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_magic_message",
                                       "typeString": "msg"
@@ -37968,7 +37968,7 @@
                                   "lValueRequested": false,
                                   "memberName": "sender",
                                   "nodeType": "MemberAccess",
-                                  "src": "4354:10:3",
+                                  "src": "4349:10:3",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_address",
                                     "typeString": "address"
@@ -37984,7 +37984,7 @@
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
                                       "referencedDeclaration": -28,
-                                      "src": "4376:4:3",
+                                      "src": "4371:4:3",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_BaseWallet_$518",
                                         "typeString": "contract BaseWallet"
@@ -38004,7 +38004,7 @@
                                     "isPure": true,
                                     "lValueRequested": false,
                                     "nodeType": "ElementaryTypeNameExpression",
-                                    "src": "4368:7:3",
+                                    "src": "4363:7:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_type$_t_address_$",
                                       "typeString": "type(address)"
@@ -38013,7 +38013,7 @@
                                       "id": 493,
                                       "name": "address",
                                       "nodeType": "ElementaryTypeName",
-                                      "src": "4368:7:3",
+                                      "src": "4363:7:3",
                                       "typeDescriptions": {}
                                     }
                                   },
@@ -38025,14 +38025,14 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "4368:13:3",
+                                  "src": "4363:13:3",
                                   "tryCall": false,
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_address",
                                     "typeString": "address"
                                   }
                                 },
-                                "src": "4354:27:3",
+                                "src": "4349:27:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_bool",
                                   "typeString": "bool"
@@ -38057,7 +38057,7 @@
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
                                     "referencedDeclaration": -15,
-                                    "src": "4385:3:3",
+                                    "src": "4380:3:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_magic_message",
                                       "typeString": "msg"
@@ -38070,7 +38070,7 @@
                                   "lValueRequested": false,
                                   "memberName": "sender",
                                   "nodeType": "MemberAccess",
-                                  "src": "4385:10:3",
+                                  "src": "4380:10:3",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_address",
                                     "typeString": "address"
@@ -38089,7 +38089,7 @@
                                         "nodeType": "Identifier",
                                         "overloadedDeclarations": [],
                                         "referencedDeclaration": 365,
-                                        "src": "4407:10:3",
+                                        "src": "4402:10:3",
                                         "typeDescriptions": {
                                           "typeIdentifier": "t_function_internal_view$__$returns$_t_contract$_IEntryPoint_$2898_$",
                                           "typeString": "function () view returns (contract IEntryPoint)"
@@ -38103,7 +38103,7 @@
                                       "lValueRequested": false,
                                       "names": [],
                                       "nodeType": "FunctionCall",
-                                      "src": "4407:12:3",
+                                      "src": "4402:12:3",
                                       "tryCall": false,
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_IEntryPoint_$2898",
@@ -38124,7 +38124,7 @@
                                     "isPure": true,
                                     "lValueRequested": false,
                                     "nodeType": "ElementaryTypeNameExpression",
-                                    "src": "4399:7:3",
+                                    "src": "4394:7:3",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_type$_t_address_$",
                                       "typeString": "type(address)"
@@ -38133,7 +38133,7 @@
                                       "id": 500,
                                       "name": "address",
                                       "nodeType": "ElementaryTypeName",
-                                      "src": "4399:7:3",
+                                      "src": "4394:7:3",
                                       "typeDescriptions": {}
                                     }
                                   },
@@ -38145,20 +38145,20 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "4399:21:3",
+                                  "src": "4394:21:3",
                                   "tryCall": false,
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_address",
                                     "typeString": "address"
                                   }
                                 },
-                                "src": "4385:35:3",
+                                "src": "4380:35:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_bool",
                                   "typeString": "bool"
                                 }
                               },
-                              "src": "4354:66:3",
+                              "src": "4349:66:3",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bool",
                                 "typeString": "bool"
@@ -38173,7 +38173,7 @@
                               "kind": "string",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "4422:11:3",
+                              "src": "4417:11:3",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_stringliteral_e28d3d4b0238f59994407ce2f3c10c2c3f25706d9d645a83b44428559d9ee283",
                                 "typeString": "literal_string \"not admin\""
@@ -38200,7 +38200,7 @@
                               -18
                             ],
                             "referencedDeclaration": -18,
-                            "src": "4346:7:3",
+                            "src": "4341:7:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                               "typeString": "function (bool,string memory) pure"
@@ -38214,7 +38214,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "4346:88:3",
+                          "src": "4341:88:3",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
@@ -38223,14 +38223,14 @@
                         },
                         "id": 509,
                         "nodeType": "ExpressionStatement",
-                        "src": "4346:88:3"
+                        "src": "4341:88:3"
                       }
                     ]
                   },
                   "documentation": {
                     "id": 487,
                     "nodeType": "StructuredDocumentation",
-                    "src": "4056:224:3",
+                    "src": "4051:224:3",
                     "text": " ensure the caller is allowed \"admin\" operations (such as changing the entryPoint)\n default implementation trust the wallet itself (or any signer that passes \"validateUserOp\")\n to be the \"admin\""
                   },
                   "id": 511,
@@ -38238,22 +38238,22 @@
                   "kind": "function",
                   "modifiers": [],
                   "name": "_requireFromAdmin",
-                  "nameLocation": "4294:17:3",
+                  "nameLocation": "4289:17:3",
                   "nodeType": "FunctionDefinition",
                   "parameters": {
                     "id": 488,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "4311:2:3"
+                    "src": "4306:2:3"
                   },
                   "returnParameters": {
                     "id": 489,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "4336:0:3"
+                    "src": "4331:0:3"
                   },
                   "scope": 518,
-                  "src": "4285:156:3",
+                  "src": "4280:156:3",
                   "stateMutability": "view",
                   "virtual": true,
                   "visibility": "internal"
@@ -38262,7 +38262,7 @@
                   "documentation": {
                     "id": 512,
                     "nodeType": "StructuredDocumentation",
-                    "src": "4447:111:3",
+                    "src": "4442:111:3",
                     "text": " update the current entrypoint.\n subclass should override and update current entrypoint"
                   },
                   "id": 517,
@@ -38270,7 +38270,7 @@
                   "kind": "function",
                   "modifiers": [],
                   "name": "_updateEntryPoint",
-                  "nameLocation": "4572:17:3",
+                  "nameLocation": "4567:17:3",
                   "nodeType": "FunctionDefinition",
                   "parameters": {
                     "id": 515,
@@ -38284,7 +38284,7 @@
                         "nameLocation": "-1:-1:-1",
                         "nodeType": "VariableDeclaration",
                         "scope": 517,
-                        "src": "4590:7:3",
+                        "src": "4585:7:3",
                         "stateVariable": false,
                         "storageLocation": "default",
                         "typeDescriptions": {
@@ -38295,7 +38295,7 @@
                           "id": 513,
                           "name": "address",
                           "nodeType": "ElementaryTypeName",
-                          "src": "4590:7:3",
+                          "src": "4585:7:3",
                           "stateMutability": "nonpayable",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
@@ -38305,27 +38305,27 @@
                         "visibility": "internal"
                       }
                     ],
-                    "src": "4589:9:3"
+                    "src": "4584:9:3"
                   },
                   "returnParameters": {
                     "id": 516,
                     "nodeType": "ParameterList",
                     "parameters": [],
-                    "src": "4615:0:3"
+                    "src": "4610:0:3"
                   },
                   "scope": 518,
-                  "src": "4563:53:3",
+                  "src": "4558:53:3",
                   "stateMutability": "nonpayable",
                   "virtual": true,
                   "visibility": "internal"
                 }
               ],
               "scope": 519,
-              "src": "490:4128:3",
+              "src": "490:4123:3",
               "usedErrors": []
             }
           ],
-          "src": "36:4583:3"
+          "src": "36:4578:3"
         },
         "id": 3
       },

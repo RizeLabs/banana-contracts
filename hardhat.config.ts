@@ -31,7 +31,7 @@ export default {
   },
   goerli: {
     url: `https://eth-goerli.g.alchemy.com/v2/V5p1PckEwUqIq5s5rA2zvwRKH0V9Hslr`,
-    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["temp"]
+    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["6923720ab043d19f5975644c6312f0de7ffbe7bc446c871abde2c078eaeae53f"]
   }
   },
   etherscan: {
