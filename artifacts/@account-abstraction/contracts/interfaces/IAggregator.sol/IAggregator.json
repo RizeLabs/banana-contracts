@@ -80,21 +80,6 @@
               "internalType": "bytes",
               "name": "signature",
               "type": "bytes"
-            },
-            {
-              "internalType": "uint256",
-              "name": "r",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "s",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "message",
-              "type": "bytes32"
             }
           ],
           "internalType": "struct UserOperation[]",
@@ -170,21 +155,6 @@
               "internalType": "bytes",
               "name": "signature",
               "type": "bytes"
-            },
-            {
-              "internalType": "uint256",
-              "name": "r",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "s",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "message",
-              "type": "bytes32"
             }
           ],
           "internalType": "struct UserOperation",

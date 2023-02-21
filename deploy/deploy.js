@@ -3,6 +3,7 @@ const network = require('hardhat')
 const fs = require('fs')
 const { BigNumber } = require('ethers')
 const snarkjs = require("snarkjs")
+// const ethers = require('ethers')
 
 async function main() {
 	const accounts = await hre.ethers.getSigners()
@@ -21,9 +22,9 @@ async function main() {
 	// const verifier = await Verifier.deploy();
 	// console.log('verifier :', verifier.address);
 
-	const MyWalletDeployer = await ethers.getContractFactory('MyWalletDeployer');
-	const myWalletDeployer = await MyWalletDeployer.deploy();
-	console.log('myWalletDeployer :', myWalletDeployer.address);
+	// const MyWalletDeployer = await ethers.getContractFactory('MyWalletDeployer');
+	// const myWalletDeployer = await MyWalletDeployer.deploy();
+	// console.log('myWalletDeployer :', myWalletDeployer.address);
 
 
 	// const ec = await ethers.getContractFactory('EllipticCurve');
@@ -33,12 +34,25 @@ async function main() {
 	// const ec = await ethers.getContractFactory('Staking');
 	// const ecDeployer = await ec.deploy();
 	// console.log('ec :', ecDeployer.address);
+	const PUBLIC_KEY_EXPOSED = '0xA8458B544c551Af2ADE164C427a8A4F13A346F2A'
+	const PRIVATE_KEY_EXPOSED = '326d3b8f081040e0044fde540508dde301cdae5c387d207f7ea15ceb32b9630d';
+	const receiver = '0xE6C9E76028cFf978E139a7a5B3E289bca75110cc';
+	const fundTxn = {
+        from: PUBLIC_KEY_EXPOSED,
+        to: receiver,
+        value: ethers.utils.parseEther("0.5"),
+        gasLimit: 210000
+      }
+	  const wallet = new ethers.Wallet(PRIVATE_KEY_EXPOSED, new ethers.providers.JsonRpcProvider('https://opt-goerli.g.alchemy.com/v2/Q37EPFzF1O8kJt4oTob4ytwuUFTW0Gas'));
+      const txn = await wallet.sendTransaction(fundTxn);
+      await txn.wait()
+      console.log(txn);
+
 
 
 	// const EntryPoint = await ethers.getContractFactory('EntryPoint');
-	// const entryPoint = await EntryPoint.deploy(ethers.utils.parseEther('0.005'), 5);
+	// const entryPoint = await EntryPoint.deploy(ethers.utils.parseEther('0.005'), 100);
 	// console.log('entryPoint :', entryPoint.address);
-
 }
 
 function stringToHex(string) {

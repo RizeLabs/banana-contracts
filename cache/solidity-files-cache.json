@@ -1148,11 +1148,11 @@
       "contentHash": "677c0e1e2735d87d8275067a67de24a5",
       "sourceName": "contracts/core/BasePaymaster.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1187,11 +1187,11 @@
       "contentHash": "e436cea06129be2c73cda4b1acc848b5",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1224,11 +1224,11 @@
       "contentHash": "b2ec1d0cc3e7c146514d2248b34c1a50",
       "sourceName": "contracts/interfaces/IPaymaster.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1261,11 +1261,11 @@
       "contentHash": "566f0750295f0f3bb9333030d5e61ca6",
       "sourceName": "contracts/interfaces/IEntryPoint.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1300,11 +1300,11 @@
       "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1335,11 +1335,11 @@
       "contentHash": "edf67111c4fcfa8485852414eafee53c",
       "sourceName": "contracts/interfaces/UserOperation.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1370,11 +1370,11 @@
       "contentHash": "01ca6b21dc1246dec79e1aa69f191fe2",
       "sourceName": "contracts/interfaces/IStakeManager.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1405,11 +1405,11 @@
       "contentHash": "a61406d7422c515af18e65403d809c8a",
       "sourceName": "contracts/interfaces/IAggregator.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1442,11 +1442,11 @@
       "contentHash": "a3df5d8a400937e2c80ef35a99c4a21b",
       "sourceName": "contracts/core/EntryPoint.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1485,11 +1485,11 @@
       "contentHash": "bc4ab5efe4a2d03fe77fbe2029f89be9",
       "sourceName": "contracts/interfaces/IWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1522,11 +1522,11 @@
       "contentHash": "d1f17d0864d6b27f4692cf41caf5c2a3",
       "sourceName": "contracts/interfaces/IAggregatedWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1561,11 +1561,11 @@
       "contentHash": "4100594d8ee8d314d3cd9104f1fcbe53",
       "sourceName": "contracts/interfaces/ICreate2Deployer.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1596,11 +1596,11 @@
       "contentHash": "8b753f7455620583e2ef0a8baf245e87",
       "sourceName": "contracts/utils/Exec.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1631,11 +1631,11 @@
       "contentHash": "6f00d256b42ddbb8b772db8162f089a3",
       "sourceName": "contracts/core/StakeManager.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1664,15 +1664,15 @@
       ]
     },
     "/Users/nitanshulokhande/Documents/Projects/asli-banana/banana-hardhat/hardhat/contracts/core/BaseWallet.sol": {
-      "lastModificationDate": 1675186086204,
+      "lastModificationDate": 1676715114191,
       "contentHash": "c0c5ae2a6089642a066dc7dcb077cb38",
       "sourceName": "contracts/core/BaseWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1706,11 +1706,11 @@
       "contentHash": "9a665a2ece1cb44db3860abed992a3e5",
       "sourceName": "contracts/Create2Factory.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1741,11 +1741,11 @@
       "contentHash": "628f9a7c6eee21bbf83247ba8468e646",
       "sourceName": "contracts/EllipticCurve.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1776,11 +1776,11 @@
       "contentHash": "de06aff9a79e801e76e1d8631f9de86c",
       "sourceName": "@account-abstraction/contracts/core/BaseWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1814,11 +1814,11 @@
       "contentHash": "e240957102529c3ccf73bcf4527bcddc",
       "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1851,11 +1851,11 @@
       "contentHash": "bc4ab5efe4a2d03fe77fbe2029f89be9",
       "sourceName": "@account-abstraction/contracts/interfaces/IWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1888,11 +1888,11 @@
       "contentHash": "566f0750295f0f3bb9333030d5e61ca6",
       "sourceName": "@account-abstraction/contracts/interfaces/IEntryPoint.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1923,15 +1923,15 @@
       ]
     },
     "/Users/nitanshulokhande/Documents/Projects/asli-banana/banana-hardhat/hardhat/node_modules/@account-abstraction/contracts/interfaces/UserOperation.sol": {
-      "lastModificationDate": 1673710178033,
-      "contentHash": "1927c2ed5791f013885de29532acf242",
+      "lastModificationDate": 1676885003100,
+      "contentHash": "edf67111c4fcfa8485852414eafee53c",
       "sourceName": "@account-abstraction/contracts/interfaces/UserOperation.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1962,11 +1962,11 @@
       "contentHash": "01ca6b21dc1246dec79e1aa69f191fe2",
       "sourceName": "@account-abstraction/contracts/interfaces/IStakeManager.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -1997,11 +1997,11 @@
       "contentHash": "a61406d7422c515af18e65403d809c8a",
       "sourceName": "@account-abstraction/contracts/interfaces/IAggregator.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2034,11 +2034,11 @@
       "contentHash": "cf46906c4035f51639a22265066a9e78",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2065,15 +2065,15 @@
       ]
     },
     "/Users/nitanshulokhande/Documents/Projects/asli-banana/banana-hardhat/hardhat/contracts/MyWalletDeployer.sol": {
-      "lastModificationDate": 1675243515761,
+      "lastModificationDate": 1676791221466,
       "contentHash": "e1784d5ae155092339b221cd0f5ab9ea",
       "sourceName": "contracts/MyWalletDeployer.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2106,11 +2106,11 @@
       "contentHash": "6120d61201657fe7d4b9b7ddafd420da",
       "sourceName": "contracts/OTP.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2142,11 +2142,11 @@
       "contentHash": "5c74c235c25df27367b14289201c7981",
       "sourceName": "contracts/OTPFactory.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2179,11 +2179,11 @@
       "contentHash": "f2f33daf9c9968321f91155e261b32f6",
       "sourceName": "contracts/Staking.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2214,11 +2214,11 @@
       "contentHash": "3854b5eb466543c91abe58a6352e1105",
       "sourceName": "contracts/verifier.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2246,15 +2246,15 @@
       ]
     },
     "/Users/nitanshulokhande/Documents/Projects/asli-banana/banana-hardhat/hardhat/contracts/MyTouchIdWallet.sol": {
-      "lastModificationDate": 1675243423972,
-      "contentHash": "46f498cd87beae080f9fb4461f71225a",
+      "lastModificationDate": 1676879958798,
+      "contentHash": "35f1662686f6751f8b9d5db028381792",
       "sourceName": "contracts/MyTouchIdWallet.sol",
       "solcConfig": {
-        "version": "0.8.12",
+        "version": "0.8.15",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 1000000
           },
           "outputSelection": {
             "*": {
@@ -2281,6 +2281,7 @@
         "^0.8.12"
       ],
       "artifacts": [
+        "IVerifier",
         "MyTouchIdWallet"
       ]
     }
