@@ -35,9 +35,9 @@ async function main() {
 	// console.log('ec :', ecDeployer.address);
 
 
-	// const EntryPoint = await ethers.getContractFactory('EntryPoint');
-	// const entryPoint = await EntryPoint.deploy(ethers.utils.parseEther('0.005'), 5);
-	// console.log('entryPoint :', entryPoint.address);
+	const EntryPoint = await ethers.getContractFactory('EntryPoint');
+	const entryPoint = await EntryPoint.deploy(ethers.utils.parseEther('0.005'), 5);
+	console.log('entryPoint :', entryPoint.address);
 
 }
 
