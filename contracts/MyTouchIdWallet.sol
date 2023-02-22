@@ -7,6 +7,7 @@ pragma solidity ^0.8.12;
 
 import '@account-abstraction/contracts/core/BaseWallet.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import "./EllipticCurve.sol";
 
 interface IVerifier {
@@ -24,7 +25,7 @@ interface IVerifier {
  *  has execute, eth handling methods
  *  has a single signer that can send requests through the entryPoint.
  */
-contract MyTouchIdWallet is BaseWallet  {
+contract MyTouchIdWallet is BaseWallet, IERC721Receiver {
   using ECDSA for bytes32;
   using UserOperationLib for UserOperation;
 
@@ -249,4 +250,13 @@ contract MyTouchIdWallet is BaseWallet  {
   function withdrawDepositTo(address payable withdrawAddress, uint256 amount) public onlyOwner {
     entryPoint().withdrawTo(withdrawAddress, amount);
   }
+
+  function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public virtual override returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
 }

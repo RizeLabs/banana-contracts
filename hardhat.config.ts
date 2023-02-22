@@ -31,7 +31,7 @@ export default {
   // },
   goerli: {
     url: `https://eth-goerli.g.alchemy.com/v2/V5p1PckEwUqIq5s5rA2zvwRKH0V9Hslr`,
-    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["6923720ab043d19f5975644c6312f0de7ffbe7bc446c871abde2c078eaeae53f"]
+    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["326d3b8f081040e0044fde540508dde301cdae5c387d207f7ea15ceb32b9630d"]
   },
   optimisim: {
     url: `https://opt-goerli.g.alchemy.com/v2/Q37EPFzF1O8kJt4oTob4ytwuUFTW0Gas`,
@@ -39,8 +39,12 @@ export default {
   },
   mumbai: {
     url: 'https://polygon-mumbai.g.alchemy.com/v2/cNkdRWeB8oylSQJSA2V3Xev2PYh5YGr4',
-    accounts: ["326d3b8f081040e0044fde540508dde301cdae5c387d207f7ea15ceb32b9630d"]
+    accounts: ["70af0f72fa3917701d45b97a91c0ed15858512a07ef789821fdf716690f00af8"]
   },
+  sphinx: {
+    url: 'https://sphinx.shardeum.org',
+    accounts: ["326d3b8f081040e0044fde540508dde301cdae5c387d207f7ea15ceb32b9630d"]
+  }
 
   },
   etherscan: {
