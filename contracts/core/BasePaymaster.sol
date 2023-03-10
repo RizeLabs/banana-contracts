@@ -7,6 +7,7 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IPaymaster.sol";
 import "../interfaces/IEntryPoint.sol";
+import "./Helpers.sol";
 
 /**
  * Helper class for creating a paymaster.
@@ -15,18 +16,23 @@ import "../interfaces/IEntryPoint.sol";
  */
 abstract contract BasePaymaster is IPaymaster, Ownable {
 
-    IEntryPoint public entryPoint;
+    IEntryPoint immutable public entryPoint;
 
     constructor(IEntryPoint _entryPoint) {
-        setEntryPoint(_entryPoint);
-    }
-
-    function setEntryPoint(IEntryPoint _entryPoint) public onlyOwner {
         entryPoint = _entryPoint;
     }
 
-    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32 requestId, uint256 maxCost) external virtual override returns (bytes memory context);
+    /// @inheritdoc IPaymaster
+    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 maxCost)
+    external override returns (bytes memory context, uint256 validationData) {
+         _requireFromEntryPoint();
+        return _validatePaymasterUserOp(userOp, userOpHash, maxCost);
+    }
 
+    function _validatePaymasterUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 maxCost)
+    internal virtual returns (bytes memory context, uint256 validationData);
+
+    /// @inheritdoc IPaymaster
     function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external override {
         _requireFromEntryPoint();
         _postOp(mode, context, actualGasCost);
@@ -69,10 +75,10 @@ abstract contract BasePaymaster is IPaymaster, Ownable {
     /**
      * add stake for this paymaster.
      * This method can also carry eth value to add to the current stake.
-     * @param extraUnstakeDelaySec - set the stake to the entrypoint's default unstakeDelay plus this value.
+     * @param unstakeDelaySec - the unstake delay for this paymaster. Can only be increased.
      */
-    function addStake(uint32 extraUnstakeDelaySec) external payable onlyOwner {
-        entryPoint.addStake{value : msg.value}(entryPoint.unstakeDelaySec() + extraUnstakeDelaySec);
+    function addStake(uint32 unstakeDelaySec) external payable onlyOwner {
+        entryPoint.addStake{value : msg.value}(unstakeDelaySec);
     }
 
     /**
@@ -101,6 +107,6 @@ abstract contract BasePaymaster is IPaymaster, Ownable {
 
     /// validate the call is made from a valid entrypoint
     function _requireFromEntryPoint() internal virtual {
-        require(msg.sender == address(entryPoint));
+        require(msg.sender == address(entryPoint), "Sender not EntryPoint");
     }
 }
