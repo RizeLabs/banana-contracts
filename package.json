@@ -6,11 +6,16 @@
     "compile:contracts": "npx hardhat compile --force",
     "develop": "npx hardhat node",
     "deploy:localhost": "npx hardhat deploy --tags complete",
-    "test": "npx hardhat test",
     "test:full": "npm run compile:circuits && npm run version:fix && npx hardhat test",
     "compile:circuits": "bash scripts/compile-circuits.sh",
     "version:fix": "node scripts/bump-solidity",
-    "setup:circom": "bash scripts/setup-circom.sh"
+    "setup:circom": "bash scripts/setup-circom.sh",
+    "clean": "rm -rf cache artifacts typechain typechain-types",
+    "compile": "./scripts/hh-wrapper compile",
+    "tsc": "tsc",
+    "test": "./scripts/hh-wrapper test",
+    "runop": "yarn prepack && hardhat run ./src/runop.ts",
+    "prepack": "./scripts/prepack-contracts-package.sh"
   },
   "repository": {
     "type": "git",
@@ -50,6 +55,9 @@
     "@account-abstraction/contracts": "^0.2.0",
     "@gnosis.pm/safe-contracts": "^1.3.0",
     "@openzeppelin/contracts": "^4.7.3",
-    "@thehubbleproject/bls": "^0.5.1"
+    "@thehubbleproject/bls": "^0.5.1",
+    "@typechain/ethers-v5": "^10.2.0",
+    "@typechain/hardhat": "^6.1.5",
+    "typechain": "^8.1.1"
   }
 }
