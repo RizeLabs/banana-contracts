@@ -32,6 +32,11 @@ export default {
   goerli: {
     url: `https://eth-goerli.g.alchemy.com/v2/V5p1PckEwUqIq5s5rA2zvwRKH0V9Hslr`,
     accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["temp"]
+  },
+  shardeum: {
+    url: process.env.MUMBAI_URL,
+    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : ["temp"],
+    chainId: 8080,
   }
   },
   etherscan: {
