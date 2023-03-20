@@ -9,11 +9,11 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
-import "../safe-contracts/Safe.sol";
-import "../interfaces/UserOperation.sol";
-import "./EllipticCurve.sol";
-import "../utils/Exec.sol";
-import "./Base64.sol";
+import "./safe-contracts/Safe.sol";
+import "./interfaces/UserOperation.sol";
+import "./utils/EllipticCurve.sol";
+import "./utils/Exec.sol";
+import "./utils/Base64.sol";
 
 contract BananaAccount is Safe {
     using ECDSA for bytes32;
