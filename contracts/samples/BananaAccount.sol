@@ -13,7 +13,7 @@ import "../safe-contracts/Safe.sol";
 import "../interfaces/UserOperation.sol";
 import "./EllipticCurve.sol";
 import "../utils/Exec.sol";
-import "./Base64.sol";
+import './Base64.sol';
 
 contract BananaAccount is Safe {
     using ECDSA for bytes32;
@@ -22,16 +22,34 @@ contract BananaAccount is Safe {
     uint256 constant internal SIG_VALIDATION_FAILED = 1;
 
     //elliptic curve used for the signature verification
-    address public ellipticCurve;
+    address ellipticCurve;
 
     //EIP4337 trusted entrypoint
     address public entryPoint;
 
-    //q values for the elliptic curve representing the public key of the user
-    uint256[2] public qValues;
+    //Banana wallet recovery trustedRelayer address
+    address public trustedRelayer = 0x605D0Cb492423De25C690aA316a9da4Af935Bcc4;
 
-    //mapping of used messages to prevent replay attacks
-    mapping(bytes32 => bool) public usedMessages;
+    //q values for the elliptic curve representing the public key of the user
+    uint256[2] qValues;
+
+    address public recoveryAddress;
+
+    uint256 public unlockTime;
+
+    bool public inRecovery;
+
+    uint256[2] nextQValues;
+
+     modifier notInRecovery {
+        require(!inRecovery, "wallet is in recovery mode");
+        _;
+    }
+
+    modifier onlyInRecovery {
+        require(inRecovery, "wallet is not in recovery mode");
+        _;
+    }
     
     /// @dev Setup function sets initial storage of contract.
     /// @param _owners List of Safe owners.
@@ -105,6 +123,41 @@ contract BananaAccount is Safe {
         require(nonce++ == userOp.nonce, "account: invalid nonce");
     }
 
+    function _getRSValues(bytes calldata signature)
+        external
+        pure
+        returns (uint256 r, uint256 s)
+    {
+        r = uint256(bytes32(signature[0:32]));
+        s = uint256(bytes32(signature[32:64]));
+    }
+
+    function _getRequestId(bytes calldata clientDataJSON)
+        external
+        pure
+        returns (bytes memory requestIdFromClientDataJSON)
+    {
+        return clientDataJSON[40:];
+    }
+
+    function concatBytes(bytes memory a, bytes memory b)
+        public
+        pure
+        returns (bytes memory)
+    {
+        bytes memory result = new bytes(a.length + b.length);
+        uint256 i;
+        uint256 j;
+
+        for (i = 0; i < a.length; i++) {
+            result[j++] = a[i];
+        }
+        for (i = 0; i < b.length; i++) {
+            result[j++] = b[i];
+        }
+        return result;
+    }
+
     function toHex16(bytes16 data) internal pure returns (bytes32 result) {
         result =
             (bytes32(data) &
@@ -175,6 +228,30 @@ contract BananaAccount is Safe {
         return _b1;
     }
 
+    function getRequestIdFromClientDataJSON(bytes calldata clientDataJSON)
+        public
+        pure
+        returns (bytes calldata)
+    {
+        return clientDataJSON[36:124];
+    }
+
+    function compareBytes(bytes memory b1, bytes memory b2)
+        public
+        pure
+        returns (bool)
+    {
+        if (b1.length != b2.length) {
+            return false;
+        }
+        for (uint256 i = 0; i < b1.length; i++) {
+            if (b1[i] != b2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /// implement template method of BaseAccount
     function _validateSignature(
         UserOperation calldata userOp,
@@ -213,7 +290,7 @@ contract BananaAccount is Safe {
         uint256 value,
         bytes memory data,
         Enum.Operation operation
-    ) public {
+    ) public notInRecovery {
         // Only Entrypoint is allowed.
         require(msg.sender == entryPoint, "account: not from EntryPoint");
         // Execute transaction without further confirmations.
@@ -252,5 +329,62 @@ contract BananaAccount is Safe {
     /// @dev the main entrypoint
     function replaceEntrypoint(address newEntrypoint) public authorized {
         entryPoint = newEntrypoint;
+    }
+
+    /// @dev Setups the address which can initiate recovery
+    /// @dev Can only be called by the account
+    /// @param _newRecoveryAddress recovery address generated while recovery setup
+    function setupRecovery(address _newRecoveryAddress) external notInRecovery {
+        require(msg.sender == address(this), "Only the account can setup recovery");
+        require(_newRecoveryAddress != address(0), "recovery address == address(0)");
+        recoveryAddress = _newRecoveryAddress;
+    }
+
+    /// @dev This function will take in new q values and start a timelock for 48 hours
+    /// @param _newQValues new q values to be used for recovery
+    function initiateRecovery(uint256[2] memory _newQValues, bytes32 _message, uint8 _v, bytes32 _r, bytes32 _s) external notInRecovery {
+        require(msg.sender == trustedRelayer, "Can only be called via Banana wallet trusted relayer");
+        require(_newQValues[0] != 0 && _newQValues[1] != 0, "q values cannot be 0");     
+        bytes32 hash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _message));
+        address signer = ecrecover(hash, _v, _r, _s);
+        require(signer == recoveryAddress, "Invalid signature");   
+        nextQValues = _newQValues;
+        inRecovery = true;
+        unlockTime = block.timestamp + 48 hours;
+    }
+
+    /// @dev Stops the recovery process by trusted Banana relayer
+    /// @dev Can be called directly from trusted relayer on behalf of user for stopping recovery
+    /// @dev In a scenario where recovery is initiated from a bad actor
+    function stopRecoveryByRelayer(bytes32 _message, uint8 _v, bytes32 _r, bytes32 _s) external onlyInRecovery {
+        require(msg.sender == trustedRelayer, "Caller should be relayer"); 
+        bytes32 hash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _message));
+        address signer = ecrecover(hash, _v, _r, _s);
+        require(signer == recoveryAddress, "Invalid signature"); 
+        inRecovery = false;
+        nextQValues = [0, 0];
+        unlockTime = 0;
+    }
+
+    /// @dev Stops the recovery process by owner wallet
+    /// @dev Can be called directly by the owner in case owner has access to wallet
+    /// @dev In a scenario where recovery is initiated from a bad actor and owner has access to wallet
+    function stopRecoveryByOwner() external onlyInRecovery {
+        require(msg.sender == address(this), "Caller should be smart contract wallet");
+        inRecovery = false;
+        nextQValues = [0, 0];
+        unlockTime = 0;
+    }
+
+    /// @dev Updates the q values to the new q values and finalise recovery
+    function finaliseRecovery() external onlyInRecovery {
+        // don't need this as gelatoe executor would be the only one calling this
+        // should we whitelist gelato executor ?
+        // require(msg.sender == trustedRelayer, "Only the trusted relayer can finalise recovery");
+        require(block.timestamp >= unlockTime - 600, "Account still in recovery");
+        qValues = nextQValues;
+        inRecovery = false;
+        nextQValues = [0, 0];
+        unlockTime = 0;
     }
 }
