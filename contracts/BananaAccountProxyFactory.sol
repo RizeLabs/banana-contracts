@@ -117,7 +117,7 @@ contract BananaAccountProxyFactory {
         uint _salt,
         bytes memory initializer
     ) public view returns (address) {
-        bytes32 salt = keccak256(abi.encodePacked(keccak256(initializer), _salt, getChainId()));
+        bytes32 salt = keccak256(abi.encodePacked(keccak256(initializer), _salt));
         bytes memory bytecode = abi.encodePacked(type(BananaAccountProxy).creationCode, uint256(uint160(_singleton)));
         bytes32 hash = keccak256(
             abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(bytecode))
