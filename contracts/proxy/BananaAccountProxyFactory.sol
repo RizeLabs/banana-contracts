@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./BananaAccountProxy.sol";
-import "./IProxyCreationCallback.sol";
+import './BananaAccountProxy.sol';
+import '../interfaces/IProxyCreationCallback.sol';
 
 /// @title Proxy Factory - Allows to create a new proxy contract and execute a message call to the new proxy within one transaction.
 /// @author Stefan George - <stefan@gnosis.pm>
@@ -20,15 +20,22 @@ contract BananaAccountProxyFactory {
     /// @param _singleton Address of singleton contract. Must be deployed at the time of execution.
     /// @param initializer Payload for a message call to be sent to a new proxy contract.
     /// @param salt Create2 salt to use for calculating the address of the new proxy contract.
-    function deployProxy(address _singleton, bytes memory initializer, bytes32 salt) internal returns (BananaAccountProxy proxy) {
-        require(isContract(_singleton), "Singleton contract not deployed");
+    function deployProxy(
+        address _singleton,
+        bytes memory initializer,
+        bytes32 salt
+    ) internal returns (BananaAccountProxy proxy) {
+        require(isContract(_singleton), 'Singleton contract not deployed');
 
-        bytes memory deploymentData = abi.encodePacked(type(BananaAccountProxy).creationCode, uint256(uint160(_singleton)));
+        bytes memory deploymentData = abi.encodePacked(
+            type(BananaAccountProxy).creationCode,
+            uint256(uint160(_singleton))
+        );
         // solhint-disable-next-line no-inline-assembly
         assembly {
             proxy := create2(0x0, add(0x20, deploymentData), mload(deploymentData), salt)
         }
-        require(address(proxy) != address(0), "Create2 call failed");
+        require(address(proxy) != address(0), 'Create2 call failed');
 
         if (initializer.length > 0) {
             // solhint-disable-next-line no-inline-assembly
@@ -44,7 +51,11 @@ contract BananaAccountProxyFactory {
     /// @param _singleton Address of singleton contract. Must be deployed at the time of execution.
     /// @param initializer Payload for a message call to be sent to a new proxy contract.
     /// @param saltNonce Nonce that will be used to generate the salt to calculate the address of the new proxy contract.
-    function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce) public returns (BananaAccountProxy proxy) {
+    function createProxyWithNonce(
+        address _singleton,
+        bytes memory initializer,
+        uint256 saltNonce
+    ) public returns (BananaAccountProxy proxy) {
         // If the initializer changes the proxy address should change too. Hashing the initializer data is cheaper than just concatinating it
         bytes32 salt = keccak256(abi.encodePacked(keccak256(initializer), saltNonce));
         proxy = deployProxy(_singleton, initializer, salt);
@@ -80,7 +91,8 @@ contract BananaAccountProxyFactory {
     ) public returns (BananaAccountProxy proxy) {
         uint256 saltNonceWithCallback = uint256(keccak256(abi.encodePacked(saltNonce, callback)));
         proxy = createProxyWithNonce(_singleton, initializer, saltNonceWithCallback);
-        if (address(callback) != address(0)) callback.proxyCreated(proxy, _singleton, initializer, saltNonce);
+        if (address(callback) != address(0))
+            callback.proxyCreated(proxy, _singleton, initializer, saltNonce);
     }
 
     /// @dev Returns true if `account` is a contract.
@@ -104,7 +116,7 @@ contract BananaAccountProxyFactory {
         return id;
     }
 
-     function getBytecode(address _owner, uint _foo) public pure returns (bytes memory) {
+    function getBytecode(address _owner, uint _foo) public pure returns (bytes memory) {
         bytes memory bytecode = type(BananaAccountProxy).creationCode;
 
         return abi.encodePacked(bytecode, abi.encode(_owner, _foo));
@@ -117,8 +129,11 @@ contract BananaAccountProxyFactory {
         uint _salt,
         bytes memory initializer
     ) public view returns (address) {
-        bytes32 salt = keccak256(abi.encodePacked(keccak256(initializer), _salt, getChainId()));
-        bytes memory bytecode = abi.encodePacked(type(BananaAccountProxy).creationCode, uint256(uint160(_singleton)));
+        bytes32 salt = keccak256(abi.encodePacked(keccak256(initializer), _salt));
+        bytes memory bytecode = abi.encodePacked(
+            type(BananaAccountProxy).creationCode,
+            uint256(uint160(_singleton))
+        );
         bytes32 hash = keccak256(
             abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(bytecode))
         );

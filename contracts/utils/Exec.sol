@@ -7,7 +7,6 @@ pragma solidity >=0.7.5 <0.9.0;
  * Utility functions helpful when making different kinds of contract calls in Solidity.
  */
 library Exec {
-
     function call(
         address to,
         uint256 value,
@@ -62,7 +61,7 @@ library Exec {
     }
 
     function callAndRevert(address to, bytes memory data, uint256 maxLen) internal {
-        bool success = call(to,0,data,gasleft());
+        bool success = call(to, 0, data, gasleft());
         if (!success) {
             revertWithData(getReturnData(maxLen));
         }
