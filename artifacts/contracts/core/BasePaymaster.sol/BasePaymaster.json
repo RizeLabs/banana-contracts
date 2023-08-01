@@ -26,7 +26,7 @@
       "inputs": [
         {
           "internalType": "uint32",
-          "name": "extraUnstakeDelaySec",
+          "name": "unstakeDelaySec",
           "type": "uint32"
         }
       ],
@@ -107,19 +107,6 @@
     {
       "inputs": [],
       "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract IEntryPoint",
-          "name": "_entryPoint",
-          "type": "address"
-        }
-      ],
-      "name": "setEntryPoint",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -210,7 +197,7 @@
         },
         {
           "internalType": "bytes32",
-          "name": "requestId",
+          "name": "userOpHash",
           "type": "bytes32"
         },
         {
@@ -225,6 +212,11 @@
           "internalType": "bytes",
           "name": "context",
           "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "validationData",
+          "type": "uint256"
         }
       ],
       "stateMutability": "nonpayable",
